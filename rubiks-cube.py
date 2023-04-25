@@ -1,11 +1,27 @@
-import random
+###############################################################################
+######################### Author:  Felipe Stangorlini #########################
+######################### Date:    Apr-2023           #########################
+######################### Version: 0.1                #########################
+###############################################################################
 
+
+######################################################################################################
+# Imports
+import random
+import os
+
+######################################################################################################
+# Classes
+
+# Core class, represents a 3x3 rubiks cube
 class RubiksCube:
     faces = {'up':1,'left':2,'front':3,'right':4,'back':5,'down':6}
     color_map = {'u':'W','l':'O','f':'G','r':'R','b':'B','d':'Y',' ':' '}
     allowed_rotation_types = ["F","f","R","r","U","u","B","b","L","l","D","d"]
     cube = {}
     blank_row = [' ', ' ', ' ']
+    shuffled_rotation = ''
+    solution = ''
     
     #initializes cube
     def __init__(self):
@@ -195,21 +211,33 @@ class RubiksCube:
         self.cube[face_str] = new_face
 
     #shuffles the cube with random rotations
-    def shuffle(self, rotations:int=20):
-        l = random.choices(self.allowed_rotation_types,k=rotations)
-        s = ' '.join(l)
-        self.shuffled_rotation = s
-        self.exec_rotation_list(s)
+    def shuffle(self, rotation_str:str='', random:bool=True, rotations:int=20):
+        if not random:
+            self.exec_rotation_list(rotation_str)
+            self.shuffled_rotation = rotation_str
+        else:
+            l = random.choices(self.allowed_rotation_types,k=rotations)
+            s = ' '.join(l)
+            self.shuffled_rotation = s
+            self.exec_rotation_list(s)
 
     #returns a 2D string with human readable representation of the cube
     def __str__(self):
+        terminal_width = os.get_terminal_size().columns-1
+        dash = '-'
+        space = ' '
+        new_line = '\n'
+        header = ' Rubiks Cube configuration '
         face_sequence = [['blank','up','blank','blank'],
                          ['left','front','right','back'],
                          ['blank','down','blank','blank']]
         s = ''
-        s+= '------------------------\n'
-        s+= '--------- Cube ---------\n'
-        s+= '------------------------\n'
+        s+= dash*terminal_width+new_line
+        s+= space*(int(terminal_width/2)-int(len(header)/2))
+        s+= header
+        s+= space*(int(terminal_width/2)-int(len(header)/2))
+        s+= new_line
+        s+= dash*terminal_width+new_line
         for i, cs in enumerate(face_sequence):
             for j in range(3):
                 for c in cs:
@@ -217,14 +245,22 @@ class RubiksCube:
                         s+=self.color_map[g][0]
                         s+=' '
                 s+='\n'
-        s+= '------------------------'
+        s+= dash*terminal_width+new_line
+        s+= 'Rotations: ['
+        s+= self.shuffled_rotation
+        s+= ']'
+        s+= new_line
+        s+= dash*terminal_width
         return s
 
+######################################################################################################
+# Main
 if __name__ == "__main__":
 
     cube = RubiksCube()
-    cube.shuffle(50)
-
+    shuffle_list = 'd R U L d u R R r f r r B F b B r B f B L D R b U U B L U u l U F b R U F r B u f F r R B b D R b d'
+    cube.shuffle(rotation_str=shuffle_list,random=False)
     print(cube)
-    print(cube.shuffled_rotation)
-    
+    solution = 'd b d B B D D r f L U F R R F F R R u R R u L L F F D F'
+    cube.exec_rotation_list(solution)
+    print(cube)
